@@ -1,5 +1,5 @@
 name: KSOC Guard
-description: Execute a set of policies against the files in a given repository.
+description: KSOC finds misconfigurations in your Kubernetes posture as part of your GitHub Actions CI workflow.
 author: KSOC
 branding:
   icon: alert-triangle
@@ -9,7 +9,7 @@ inputs:
   fail_on_severity:
     required: false
     description: "The severity level at which to fail the workflow. Valid values are: none, low, medium, high, critical."
-    default: high
+    default: none
   format:
     required: false
     description: "The format of the output. Valid values are: ci-table, table."
@@ -17,40 +17,44 @@ inputs:
   ignored_paths:
     required: false
     description: "Comma separated list of paths to ignore."
-    default: ""
   ignored_policies:
     required: false
     description: "Comma separated list of policy IDs to ignore."
-    default: ""
   ksoc_access_key_id:
+    required: false
     description: "The KSOC access key ID."
-    required: true
   ksoc_account_id:
+    required: false
     description: "The KSOC account ID."
-    required: true
   ksoc_api_url:
     required: false
     description: "The KSOC API URL."
     default: https://api.ksoc.com
   ksoc_secret_key:
+    required: false
     description: "The KSOC secret key."
-    required: true
   paths:
     required: false
     description: "Comma separated list of paths to scan."
     default: "."
+  policy_dir:
+    required: false
+    description: "The directory containing the policies to execute."
   policy_ids:
     required: false
     description: "Comma separated list of policy IDs to execute."
-    default: ""
   policy_tags:
     required: false
     description: "Comma separated list of policy tags to execute."
-    default: ""
+outputs:
+  results:
+    description: "The results of the policy execution."
+  sarif:
+    description: "Path to a SARIF report file with the policy execution results."
 
 runs:
   using: docker
-  image: docker://us.gcr.io/ksoc-public/policy-executor:v0.0.6
+  image: Dockerfile
   env:
     FAIL_ON_SEVERITY: ${{ inputs.fail_on_severity }}
     FORMAT: ${{ inputs.format }}
@@ -61,8 +65,6 @@ runs:
     KSOC_API_URL: ${{ inputs.ksoc_api_url }}
     KSOC_SECRET_KEY: ${{ inputs.ksoc_secret_key }}
     PATHS: ${{ inputs.paths }}
+    POLICY_DIR: ${{ inputs.policy_dir }}
     POLICY_IDS: ${{ inputs.policy_ids }}
     POLICY_TAGS: ${{ inputs.policy_tags }}
-  args:
-    - policies
-    - execute
